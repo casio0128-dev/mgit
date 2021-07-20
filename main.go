@@ -4,9 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"unicode"
 	"os/exec"
 	"strings"
+	"unicode"
 )
 
 func main() {
@@ -35,13 +35,8 @@ func main() {
 	}
 
 	// Gitコマンドを実行
-	fmt.Println(gitCommand)
-	output, err := exec.Command("git", gitCommand...).CombinedOutput()
+	output, _ := exec.Command("git", gitCommand...).CombinedOutput()
 	fmt.Println(string(output))
-
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 func getCommitMessageIndex(gitArgs []string) (int, bool) {
