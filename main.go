@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"unicode"
 	"os/exec"
 	"strings"
 )
@@ -12,15 +13,15 @@ func main() {
 	flag.Parse()
 
 	// カレントのブランチ名を取得
-	current, err := getGitCurrentBranchName()
+	currentBranchName, err := getGitCurrentBranchName()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// コミットコメントの接頭辞を取得
 	commitCommentPrefix := ""
-	if strings.HasPrefix(current, "r") {
-		tickedId := current[1:]
+	if isTicketIdBranch(currentBranchName) {
+		tickedId := currentBranchName[1:]
 		commitCommentPrefix = fmt.Sprintf("#%s ", tickedId)
 	}
 
@@ -34,6 +35,7 @@ func main() {
 	}
 
 	// Gitコマンドを実行
+	fmt.Println(gitCommand)
 	output, err := exec.Command("git", gitCommand...).CombinedOutput()
 	fmt.Println(string(output))
 
@@ -73,4 +75,16 @@ func getGitCurrentBranchName() (string, error) {
 	parsedBranchName := strings.Split(currentBranchName, "\n")[0]     // exam)hogehoge
 
 	return parsedBranchName, nil
+}
+
+func isTicketIdBranch(branch string) bool {
+	if strings.HasPrefix(branch, "r") {
+		for _, b := range branch[1:] {
+			if !unicode.IsDigit(b) {
+				return false
+			}
+		}
+		return true
+	}
+	return false
 }
