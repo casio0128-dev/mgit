@@ -59,10 +59,10 @@ func getCommitMessage(gitArgs []string) string {
 
 func getGitCurrentBranchName() (string, error) {
 	// git branch | grep -E '^\*' | sed "s/\* //1"
-	result, err := exec.Command("git", "branch").Output()
+	result, err := exec.Command("git", "branch").CombinedOutput()
 
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("Can't get current branch name.")
 	}
 
 	orgCurrentBranchName := string(result)                            // exam)  master\n* hogehoge\n  fugafuga
