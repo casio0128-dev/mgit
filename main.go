@@ -40,7 +40,7 @@ func main() {
 func getCommitMessageIndex(gitArgs []string) (int, bool) {
 	for index, arg := range gitArgs {
 		if strings.EqualFold(arg, "commit") {
-			if len(gitArgs) >= index + 1 && strings.EqualFold(gitArgs[index + 1], "-m") {
+			if len(gitArgs) > index + 1 && strings.EqualFold(gitArgs[index + 1], "-m") {
 				return index + 2, true
 			}
 		}
