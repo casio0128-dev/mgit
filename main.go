@@ -12,26 +12,30 @@ import (
 func main() {
 	flag.Parse()
 
-	// カレントのブランチ名を取得
-	currentBranchName, err := getGitCurrentBranchName()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// コミットコメントの接頭辞を取得
-	commitCommentPrefix := ""
-	if isTicketIdBranch(currentBranchName) {
-		tickedId := currentBranchName[1:]
-		commitCommentPrefix = fmt.Sprintf("#%s ", tickedId)
-	}
-
-	// コミットコメントを作成（接頭辞付与済）
-	commitComment := fmt.Sprintf(`"%s"`, commitCommentPrefix+getCommitMessage(flag.Args()))
 	// Gitコマンドを取得
 	gitCommand := flag.Args()
-	// コミットメッセージがあった場合に、既存のコミットメッセージと置換（接頭辞付与済）
-	if commitMessageIndex, isCommit := getCommitMessageIndex(flag.Args()); isCommit && commitMessageIndex != -1 {
-		gitCommand[commitMessageIndex] = commitComment
+
+	if _, isCommit := isCommit(flag.Args()); isCommit {
+		// カレントのブランチ名を取得
+		currentBranchName, err := getGitCurrentBranchName()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// コミットコメントの接頭辞を取得
+		commitCommentPrefix := ""
+		if isTicketIdBranch(currentBranchName) {
+			tickedId := currentBranchName[1:]
+			commitCommentPrefix = fmt.Sprintf("#%s ", tickedId)
+		}
+
+		// コミットコメントを作成（接頭辞付与済）
+		commitComment := fmt.Sprintf(`"%s"`, commitCommentPrefix+getCommitMessage(gitCommand))
+
+		// コミットメッセージがあった場合に、既存のコミットメッセージと置換（接頭辞付与済）
+		if commitMessageIndex, isCommit := getCommitMessageIndex(gitCommand); isCommit && commitMessageIndex != -1 {
+			gitCommand[commitMessageIndex] = commitComment
+		}
 	}
 
 	// Gitコマンドを実行
@@ -39,12 +43,19 @@ func main() {
 	fmt.Println(string(output))
 }
 
-func getCommitMessageIndex(gitArgs []string) (int, bool) {
+func isCommit(gitArgs []string) (int, bool) {
 	for index, arg := range gitArgs {
 		if strings.EqualFold(arg, "commit") {
-			if len(gitArgs) > index+1 && strings.EqualFold(gitArgs[index+1], "-m") {
-				return index + 2, true
-			}
+			return index, true
+		}
+	}
+	return -1, false
+}
+
+func getCommitMessageIndex(gitArgs []string) (int, bool) {
+	if index, isCommit := isCommit(gitArgs); isCommit {
+		if len(gitArgs) > index+1 && strings.EqualFold(gitArgs[index+1], "-m") {
+			return index + 2, true
 		}
 	}
 	return -1, false
