@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os/exec"
 	"strings"
 	"unicode"
@@ -17,10 +16,7 @@ func main() {
 
 	if _, isCommit := isCommit(flag.Args()); isCommit {
 		// カレントのブランチ名を取得
-		currentBranchName, err := getGitCurrentBranchName()
-		if err != nil {
-			log.Fatal(err)
-		}
+		currentBranchName := getGitCurrentBranchName()
 
 		// コミットコメントの接頭辞を取得
 		commitCommentPrefix := ""
@@ -68,19 +64,21 @@ func getCommitMessage(gitArgs []string) string {
 	return ""
 }
 
-func getGitCurrentBranchName() (string, error) {
+func getGitCurrentBranchName() (string) {
 	// git branch | grep -E '^\*' | sed "s/\* //1"
 	result, err := exec.Command("git", "branch").CombinedOutput()
 
 	if err != nil {
-		return "", fmt.Errorf("Can't get current branch name.")
+		return ""
 	}
 
 	orgCurrentBranchName := string(result)                            // exam)  master\n* hogehoge\n  fugafuga
-	currentBranchName := strings.Split(orgCurrentBranchName, "* ")[1] // exam)hogehoge\n  fugafuga
-	parsedBranchName := strings.Split(currentBranchName, "\n")[0]     // exam)hogehoge
+	if strings.Contains(orgCurrentBranchName, "* ") {
+		orgCurrentBranchName = strings.Split(orgCurrentBranchName, "* ")[1] // exam)hogehoge\n  fugafuga
+	}
+	parsedBranchName := strings.Split(orgCurrentBranchName, "\n")[0]     // exam)hogehoge
 
-	return parsedBranchName, nil
+	return parsedBranchName
 }
 
 func isTicketIdBranch(branch string) bool {
