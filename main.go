@@ -26,7 +26,7 @@ func main() {
 		}
 
 		// コミットコメントを作成（接頭辞付与済）
-		commitComment := fmt.Sprintf(`"%s"`, commitCommentPrefix+getCommitMessage(gitCommand))
+		commitComment := fmt.Sprintf(`%s`, commitCommentPrefix+getCommitMessage(gitCommand))
 
 		// コミットメッセージがあった場合に、既存のコミットメッセージと置換（接頭辞付与済）
 		if commitMessageIndex, isCommit := getCommitMessageIndex(gitCommand); isCommit && commitMessageIndex != -1 {
